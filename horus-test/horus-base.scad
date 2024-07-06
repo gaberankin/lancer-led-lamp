@@ -2,45 +2,56 @@ include <horus-logo.scad>
 
 // vars
 
-interiorShellDiffZ = 2;
-interiorShellDiffHeight = 10;
-shelfHeight = 2;
-shelfOffset = -2;
+interiorShellDiffZ = 2; // [1, 2]
+interiorShellDiffHeight = 10; // [0:10]
+shelfHeight = 2;  // [0, 1, 2]
+shelfOffset = -2; // [-1, -2, -3]
 slotOffset = 0.1;
-slotHeight = 10;
+slotHeight = 10; // [0:10]
 
 shellOffset = 9;
 shellHeight = interiorShellDiffZ + interiorShellDiffHeight + shelfHeight + slotHeight;
 
-// this provides the base shell
-difference() {
-    // shell
-    color("black")
-    linear_extrude(shellHeight) {
-        offset(delta=shellOffset)
-        horus_logo();
-    }
-
-    // interior
-    color("white")
-    translate([0, 0, interiorShellDiffZ]) {
-        linear_extrude(interiorShellDiffHeight) {
-            horus_logo();
+module base() {
+    // this provides the base shell
+    difference() {
+        // shell
+        color("black")
+        linear_extrude(shellHeight) {
+            offset(delta=shellOffset)
+            children();
         }
 
-        translate([0, 0, interiorShellDiffHeight]) {
-            linear_extrude(shelfHeight) {
-                offset(delta=shelfOffset)
-                horus_logo();
-            }
-
-            translate([0, 0, shelfHeight])
-                linear_extrude(slotHeight) {
-                    offset(delta=slotOffset)
-                    horus_logo();
+        // interior
+        color("white")
+        translate([0, 0, interiorShellDiffZ]) {
+            union() {
+                linear_extrude(interiorShellDiffHeight) {
+                    children();
                 }
+
+                translate([0, 0, interiorShellDiffHeight]) {
+                    union() {
+                        linear_extrude(shelfHeight) {
+                            offset(delta=shelfOffset)
+                            children();
+                        }
+
+                        translate([0, 0, shelfHeight]) {
+                            linear_extrude(slotHeight) {
+                                offset(delta=slotOffset)
+                                children();
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
+}
+
+base() {
+    horus_logo();
 }
 
 // now that base shell is built, we need to create channels through the interiorShell section to allow passage of electronics
